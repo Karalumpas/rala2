@@ -17,6 +17,12 @@
                 <button class="btn btn-secondary" onclick="openShopManager()">
                     <i class="fas fa-store"></i> Administrer Shops
                 </button>
+                <div class="shop-selector" style="margin-left:15px;">
+                    <i class="fas fa-store"></i>
+                    <select id="shopSelect">
+                        <option value="">Vælg en shop</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -62,13 +68,6 @@
         </div>
 
         <div class="controls hidden" id="controls">
-            <div class="shop-selector">
-                <i class="fas fa-store"></i>
-                <select id="shopSelect">
-                    <option value="">Vælg en shop</option>
-                </select>
-            </div>
-            
             <input type="text" class="search-box" id="searchBox" placeholder="🔍 Søg efter produktnavn, SKU eller farve...">
             
             <div class="selected-count">
@@ -155,41 +154,6 @@
                     <div class="shop-list" id="shopList">
                         <!-- Shops will be listed here -->
                     </div>
-                    <button class="btn btn-primary" onclick="showShopForm()" style="margin-top:15px;">
-                        <i class="fas fa-plus"></i> Ny Shop
-                    </button>
-                </div>
-
-                <div id="shopFormSection" class="hidden">
-                    <div class="form-group">
-                        <label for="shopName">Shop Navn</label>
-                        <input type="text" id="shopName" placeholder="Min Webshop">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="shopUrl">Shop URL</label>
-                        <input type="url" id="shopUrl" placeholder="https://min-shop.dk">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="consumerKey">Consumer Key</label>
-                        <input type="text" id="consumerKey" placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxx">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="consumerSecret">Consumer Secret</label>
-                        <input type="text" id="consumerSecret" placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxx">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="shopSSL">
-                            <input type="checkbox" id="shopSSL"> Brug SSL (https)
-                        </label>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveShop()">
-                        <i class="fas fa-save"></i> Gem Shop
-                    </button>
-                    <button class="btn btn-secondary" onclick="hideShopForm()" style="margin-left:10px;">Annuller</button>
                 </div>
             </div>
             <div class="modal-footer">

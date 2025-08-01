@@ -6,6 +6,36 @@ function tryProcessData() {
     }
 }
 
+function mapApiProduct(p) {
+    const colourAttr = p.attributes.find(a => /colour|color/i.test(a.name));
+    const sizeAttr = p.attributes.find(a => /size/i.test(a.name));
+    const brandAttr = p.attributes.find(a => /brand/i.test(a.name));
+    return {
+        post_title: p.name,
+        sku: p.sku,
+        stock_status: p.stock_status,
+        'attribute:Colour': colourAttr && colourAttr.options[0],
+        'attribute:Size': sizeAttr && sizeAttr.options[0],
+        'attribute:pa_Brand': brandAttr && brandAttr.options[0],
+        'tax:product_cat': p.categories.map(c => c.name).join(', '),
+        images: p.images && p.images[0] ? p.images[0].src : ''
+    };
+}
+
+async function loadProductsForShop(index) {
+    const shop = shops[index];
+    if (!shop) return;
+    try {
+        const res = await fetch(`/api/products/${shop.id}`);
+        const data = await res.json();
+        parentData = data.products.map(mapApiProduct);
+        variationData = [];
+        tryProcessData();
+    } catch (err) {
+        console.error('Failed to load products', err);
+    }
+}
+
 function processAndDisplayData() {
     combinedData = [];
     selectedProducts.clear();

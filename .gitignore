@@ -1,4 +1,6 @@
 node_modules/
-.vscode/
 .env
-
+*.csv
+*.log
+dist/
+.DS_Store

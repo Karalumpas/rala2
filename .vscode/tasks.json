@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Create new branch for shop manager redesign",
+			"command": "git checkout -b shop-manager-redesign-ui",
+			"group": "build"
+		}
+	]
+}

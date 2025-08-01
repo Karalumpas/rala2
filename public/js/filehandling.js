@@ -3,13 +3,23 @@
 function handleParentFile(event) {
     const file = event.target.files[0];
     if (file) {
+        parentData = [];
+        let rowCount = 0;
+        updateFileStatus('parentStatus', '⏳ Indlæser...');
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             dynamicTyping: true,
-            complete: function(results) {
-                parentData = results.data;
-                updateFileStatus('parentStatus', `✅ ${parentData.length} produkter indlæst`);
+            worker: true,
+            chunk: function(results) {
+                parentData.push(...results.data);
+                rowCount += results.data.length;
+                if (rowCount % 100 === 0) {
+                    updateFileStatus('parentStatus', `⏳ ${rowCount} rækker indlæst...`);
+                }
+            },
+            complete: function() {
+                updateFileStatus('parentStatus', `✅ ${rowCount} produkter indlæst`);
                 document.querySelector('#parentFile').closest('.upload-box').classList.add('loaded');
                 tryProcessData();
             },
@@ -23,13 +33,23 @@ function handleParentFile(event) {
 function handleVariationFile(event) {
     const file = event.target.files[0];
     if (file) {
+        variationData = [];
+        let rowCount = 0;
+        updateFileStatus('variationStatus', '⏳ Indlæser...');
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
             dynamicTyping: true,
-            complete: function(results) {
-                variationData = results.data;
-                updateFileStatus('variationStatus', `✅ ${variationData.length} variationer indlæst`);
+            worker: true,
+            chunk: function(results) {
+                variationData.push(...results.data);
+                rowCount += results.data.length;
+                if (rowCount % 100 === 0) {
+                    updateFileStatus('variationStatus', `⏳ ${rowCount} rækker indlæst...`);
+                }
+            },
+            complete: function() {
+                updateFileStatus('variationStatus', `✅ ${rowCount} variationer indlæst`);
                 document.querySelector('#variationFile').closest('.upload-box').classList.add('loaded');
                 tryProcessData();
             },

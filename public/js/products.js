@@ -145,7 +145,18 @@ function sendToWooCommerce() {
     if (!confirm(`Er du sikker på du vil sende ${selectedProducts.size} produkter til ${shop.name}?`)) {
         return;
     }
+    const productsToSend = [];
+    selectedProducts.forEach(sku => {
+        const item = combinedData.find(i => i.data.sku === sku && i.type === 'variation');
+        if (item) {
+            const priceGBP = editedData.get(`${sku}_price`) ?? item.data.regular_price;
+            const priceDKK = convertGBPtoDKK(priceGBP);
+            productsToSend.push({ sku: sku, price: priceDKK });
+        }
+    });
+
     alert(`Sender ${selectedProducts.size} produkter til ${shop.name}...\n\nDette er en demo. I en rigtig applikation ville dette sende produkterne via WooCommerce REST API.`);
+    console.log('Produkter der sendes:', productsToSend);
 
     selectedProducts.clear();
     document.querySelectorAll('.product-checkbox').forEach(cb => (cb.checked = false));

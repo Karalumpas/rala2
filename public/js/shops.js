@@ -66,6 +66,7 @@ function renderShops() {
         `;
         shopList.appendChild(item);
     });
+}
 // Form og CRUD logik
 const shopFormSection = document.getElementById('shopFormSection');
 const shopListSection = document.getElementById('shopListSection');
@@ -135,7 +136,6 @@ async function deleteShop(id) {
     if (!confirm('Er du sikker på du vil slette denne shop?')) return;
     await fetch(`/api/shops/${id}`, { method: 'DELETE' });
     loadShops(true);
-}
 }
 
 function updateShopSelect() {

@@ -189,17 +189,31 @@ function sendToWooCommerce() {
             const priceGBP = editedData.get(`${sku}_price`) ?? item.data.regular_price;
             const withProfit = applyProfitMargin(priceGBP);
             const priceDKK = convertGBPtoDKK(withProfit);
-            productsToSend.push({ sku: sku, price: priceDKK });
+            const category = editedData.get(`${item.parent.sku}_category`) ?? item.parent['tax:product_cat'];
+            productsToSend.push({ sku: sku, price: priceDKK, category });
         }
     });
 
-    alert(`Sender ${selectedProducts.size} produkter til ${shop.name}...\n\nDette er en demo. I en rigtig applikation ville dette sende produkterne via WooCommerce REST API.`);
     console.log('Produkter der sendes:', productsToSend);
 
-    selectedProducts.clear();
-    document.querySelectorAll('.product-checkbox').forEach(cb => (cb.checked = false));
-    document.getElementById('selectAll').checked = false;
-    updateSelectedCount();
-
-    alert('Produkter sendt til WooCommerce!');
+    fetch(`/api/products/${shop.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: productsToSend })
+    })
+        .then(res => res.json())
+        .then(data => {
+            alert('WooCommerce opdatering fuldført');
+            console.log('Resultater:', data);
+        })
+        .catch(err => {
+            alert('Fejl under opdatering');
+            console.error(err);
+        })
+        .finally(() => {
+            selectedProducts.clear();
+            document.querySelectorAll('.product-checkbox').forEach(cb => (cb.checked = false));
+            document.getElementById('selectAll').checked = false;
+            updateSelectedCount();
+        });
 }

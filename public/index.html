@@ -860,37 +860,45 @@
                 <button class="close-modal" onclick="closeShopManager()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="shopName">Shop Navn</label>
-                    <input type="text" id="shopName" placeholder="Min Webshop">
+                <div id="shopListSection">
+                    <div class="shop-list" id="shopList">
+                        <!-- Shops will be listed here -->
+                    </div>
+                    <button class="btn btn-primary" onclick="showShopForm()" style="margin-top:15px;">
+                        <i class="fas fa-plus"></i> Ny Shop
+                    </button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="shopUrl">Shop URL</label>
-                    <input type="url" id="shopUrl" placeholder="https://min-shop.dk">
-                </div>
-                
-                <div class="form-group">
-                    <label for="consumerKey">Consumer Key</label>
-                    <input type="text" id="consumerKey" placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-                </div>
-                
-                <div class="form-group">
-                    <label for="consumerSecret">Consumer Secret</label>
-                    <input type="text" id="consumerSecret" placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-                </div>
-                
-                <div class="form-group">
-                    <label for="shopSSL">
-                        <input type="checkbox" id="shopSSL"> Brug SSL (https)
-                    </label>
-                </div>
-                <button class="btn btn-primary" onclick="saveShop()">
-                    <i class="fas fa-save"></i> Gem Shop
-                </button>
-                
-                <div class="shop-list" id="shopList">
-                    <!-- Shops will be listed here -->
+
+                <div id="shopFormSection" class="hidden">
+                    <div class="form-group">
+                        <label for="shopName">Shop Navn</label>
+                        <input type="text" id="shopName" placeholder="Min Webshop">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shopUrl">Shop URL</label>
+                        <input type="url" id="shopUrl" placeholder="https://min-shop.dk">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="consumerKey">Consumer Key</label>
+                        <input type="text" id="consumerKey" placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxx">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="consumerSecret">Consumer Secret</label>
+                        <input type="text" id="consumerSecret" placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="shopSSL">
+                            <input type="checkbox" id="shopSSL"> Brug SSL (https)
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveShop()">
+                        <i class="fas fa-save"></i> Gem Shop
+                    </button>
+                    <button class="btn btn-secondary" onclick="hideShopForm()" style="margin-left:10px;">Annuller</button>
                 </div>
             </div>
             <div class="modal-footer">
@@ -909,6 +917,7 @@
         let editedData = new Map();
         let selectedProducts = new Set();
         let shops = JSON.parse(localStorage.getItem('woocommerceShops')) || [];
+        let editingIndex = null;
         
         // Pagination variables
         let currentPage = 1;
@@ -920,6 +929,8 @@
         const shopManagerModal = document.getElementById('shopManagerModal');
         const shopSelect = document.getElementById('shopSelect');
         const shopList = document.getElementById('shopList');
+        const shopListSection = document.getElementById('shopListSection');
+        const shopFormSection = document.getElementById('shopFormSection');
         const selectedProductsCount = document.getElementById('selectedProductsCount');
         const paginationControls = document.getElementById('paginationControls');
 
@@ -1310,11 +1321,39 @@
         // Shop Management Functions
         function openShopManager() {
             shopManagerModal.classList.add('active');
+            hideShopForm();
             renderShops();
         }
 
         function closeShopManager() {
             shopManagerModal.classList.remove('active');
+        }
+
+        function showShopForm(index = null) {
+            shopListSection.classList.add('hidden');
+            shopFormSection.classList.remove('hidden');
+            if (index !== null) {
+                editingIndex = index;
+                const shop = shops[index];
+                document.getElementById('shopName').value = shop.name;
+                document.getElementById('shopUrl').value = shop.url;
+                document.getElementById('consumerKey').value = shop.consumerKey;
+                document.getElementById('consumerSecret').value = shop.consumerSecret;
+                document.getElementById('shopSSL').checked = shop.ssl || false;
+            } else {
+                editingIndex = null;
+                document.getElementById('shopName').value = '';
+                document.getElementById('shopUrl').value = '';
+                document.getElementById('consumerKey').value = '';
+                document.getElementById('consumerSecret').value = '';
+                document.getElementById('shopSSL').checked = false;
+            }
+        }
+
+        function hideShopForm() {
+            editingIndex = null;
+            shopFormSection.classList.add('hidden');
+            shopListSection.classList.remove('hidden');
         }
 
         function renderShops() {
@@ -1379,16 +1418,25 @@
                 alert('Udfyld alle felter');
                 return;
             }
-            const newShop = {
-                id: Date.now(),
-                name: name,
-                url: url,
-                consumerKey: key,
-                consumerSecret: secret,
-                ssl: ssl,
-                apiStatus: 'unknown'
-            };
-            shops.push(newShop);
+            if (editingIndex !== null) {
+                const shop = shops[editingIndex];
+                shop.name = name;
+                shop.url = url;
+                shop.consumerKey = key;
+                shop.consumerSecret = secret;
+                shop.ssl = ssl;
+            } else {
+                const newShop = {
+                    id: Date.now(),
+                    name: name,
+                    url: url,
+                    consumerKey: key,
+                    consumerSecret: secret,
+                    ssl: ssl,
+                    apiStatus: 'unknown'
+                };
+                shops.push(newShop);
+            }
             localStorage.setItem('woocommerceShops', JSON.stringify(shops));
             // Clear form
             document.getElementById('shopName').value = '';
@@ -1396,18 +1444,14 @@
             document.getElementById('consumerKey').value = '';
             document.getElementById('consumerSecret').value = '';
             document.getElementById('shopSSL').checked = false;
+            hideShopForm();
             renderShops();
             updateShopSelect();
             alert('Shop gemt!');
         }
 
         function editShop(index) {
-            const shop = shops[index];
-            document.getElementById('shopName').value = shop.name;
-            document.getElementById('shopUrl').value = shop.url;
-            document.getElementById('consumerKey').value = shop.consumerKey;
-            document.getElementById('consumerSecret').value = shop.consumerSecret;
-            document.getElementById('shopSSL').checked = shop.ssl || false;
+            showShopForm(index);
         }
 
         function deleteShop(index) {

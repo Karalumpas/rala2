@@ -2,10 +2,31 @@
 
 window.shops = [];
 
-async function loadShops() {
+function saveShopsLocal() {
+    try {
+        localStorage.setItem('shops', JSON.stringify(window.shops));
+    } catch (e) {
+        console.error('Failed to store shops locally', e);
+    }
+}
+
+async function loadShops(forceServer = false) {
+    if (!forceServer) {
+        const stored = localStorage.getItem('shops');
+        if (stored) {
+            try {
+                window.shops = JSON.parse(stored);
+                updateShopSelect();
+                return;
+            } catch (e) {
+                console.error('Failed to parse shops from storage', e);
+            }
+        }
+    }
     try {
         const res = await fetch('/api/shops');
         window.shops = await res.json();
+        saveShopsLocal();
         updateShopSelect();
     } catch (err) {
         console.error('Failed to load shops', err);
@@ -85,7 +106,7 @@ shopForm.addEventListener('submit', async function(e) {
         body: JSON.stringify({ name, url, apiKey })
     });
     hideShopForm();
-    loadShops();
+    loadShops(true);
 });
 
 async function testShopConnection() {
@@ -113,7 +134,7 @@ async function testShopConnectionFromList(url, apiKey) {
 async function deleteShop(id) {
     if (!confirm('Er du sikker på du vil slette denne shop?')) return;
     await fetch(`/api/shops/${id}`, { method: 'DELETE' });
-    loadShops();
+    loadShops(true);
 }
 }
 

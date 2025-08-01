@@ -30,3 +30,10 @@ When products are selected in the UI, the "Send til WooCommerce" button will pos
 the changes to `/api/products/{shopId}`. The server locates each product by SKU
 and updates the price and category on the chosen shop using the WooCommerce REST
 API.
+
+## Shop management persistence
+
+The list of shops is stored in the browser's `localStorage`. When the page
+loads, the application tries to read the cached list before requesting
+`/api/shops`. Adding, editing or deleting a shop triggers a refresh which
+updates the cached data so the latest list is available on the next visit.

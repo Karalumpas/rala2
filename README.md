@@ -31,6 +31,14 @@ the changes to `/api/products/{shopId}`. The server locates each product by SKU
 and updates the price and category on the chosen shop using the WooCommerce REST
 API.
 
+## Loading products from WooCommerce
+
+Selecting a shop now triggers a request to `/api/products/{shopId}` which
+fetches all products from the configured WooCommerce store. For each product the
+server also requests its variations so the response contains two arrays:
+`products` and `variations`. The client maps these and shows variation images in
+the product table.
+
 ## Shop management persistence
 
 The list of shops is stored in the browser's `localStorage`. When the page

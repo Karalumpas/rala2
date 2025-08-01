@@ -61,7 +61,7 @@ function renderShops() {
             <div class="shop-actions">
                 <button class="btn-icon edit" onclick="showShopForm(${shop.id})"><i class="fas fa-edit"></i></button>
                 <button class="btn-icon delete" onclick="deleteShop(${shop.id})"><i class="fas fa-trash"></i></button>
-                <button class="btn-icon" onclick="testShopConnectionFromList('${shop.url}', '${shop.apiKey}')"><i class="fas fa-plug"></i></button>
+                <button class="btn-icon" onclick="testShopConnectionFromList('${shop.url}', '${shop.consumerKey}', '${shop.consumerSecret}')"><i class="fas fa-plug"></i></button>
             </div>
         `;
         shopList.appendChild(item);
@@ -79,7 +79,8 @@ function showShopForm(id = null) {
         const shop = shops.find(s => s.id === id);
         document.getElementById('shopName').value = shop.name;
         document.getElementById('shopUrl').value = shop.url;
-        document.getElementById('shopApiKey').value = shop.apiKey;
+        document.getElementById('shopConsumerKey').value = shop.consumerKey || '';
+        document.getElementById('shopConsumerSecret').value = shop.consumerSecret || '';
         shopForm.dataset.editId = shop.id;
     } else {
         shopForm.reset();
@@ -97,14 +98,15 @@ shopForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const name = document.getElementById('shopName').value;
     const url = document.getElementById('shopUrl').value;
-    const apiKey = document.getElementById('shopApiKey').value;
+    const consumerKey = document.getElementById('shopConsumerKey').value;
+    const consumerSecret = document.getElementById('shopConsumerSecret').value;
     const editId = shopForm.dataset.editId;
     const method = editId ? 'PUT' : 'POST';
     const endpoint = editId ? `/api/shops/${editId}` : '/api/shops';
     await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, url, apiKey })
+        body: JSON.stringify({ name, url, consumerKey, consumerSecret })
     });
     hideShopForm();
     loadShops(true);
@@ -112,21 +114,22 @@ shopForm.addEventListener('submit', async function(e) {
 
 async function testShopConnection() {
     const url = document.getElementById('shopUrl').value;
-    const apiKey = document.getElementById('shopApiKey').value;
+    const consumerKey = document.getElementById('shopConsumerKey').value;
+    const consumerSecret = document.getElementById('shopConsumerSecret').value;
     const res = await fetch('/api/shops/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, apiKey })
+        body: JSON.stringify({ url, consumerKey, consumerSecret })
     });
     const result = await res.json();
     document.getElementById('testResult').textContent = result.success ? 'Forbindelse OK!' : 'Fejl: ' + result.message;
 }
 
-async function testShopConnectionFromList(url, apiKey) {
+async function testShopConnectionFromList(url, consumerKey, consumerSecret) {
     const res = await fetch('/api/shops/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, apiKey })
+        body: JSON.stringify({ url, consumerKey, consumerSecret })
     });
     const result = await res.json();
     alert(result.success ? 'Forbindelse OK!' : 'Fejl: ' + result.message);

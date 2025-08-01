@@ -1,0 +1,16 @@
+{
+  "name": "rala2",
+  "version": "1.0.0",
+  "description": "Express server for WooCommerce product viewer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

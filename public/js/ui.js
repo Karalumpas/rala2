@@ -80,3 +80,8 @@ function collapseUploadSection() {
     const section = document.getElementById('fileUploadSection');
     if (section) section.classList.add('collapsed');
 }
+
+function toggleUploadSection() {
+    const section = document.getElementById('fileUploadSection');
+    if (section) section.classList.toggle('collapsed');
+}

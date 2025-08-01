@@ -1,6 +1,6 @@
 # WooCommerce Product Viewer (Node.js)
 
-This project displays parent and variation products from CSV files and allows basic management features.
+This project displays parent and variation products from CSV files and allows basic management features. Selected products can be updated directly on your WooCommerce shops using the built in API endpoints.
 
 ## Setup
 
@@ -23,3 +23,10 @@ npm start
 ```
 
 The application will be available at http://localhost:3500 .
+
+## Updating products via API
+
+When products are selected in the UI, the "Send til WooCommerce" button will post
+the changes to `/api/products/{shopId}`. The server locates each product by SKU
+and updates the price and category on the chosen shop using the WooCommerce REST
+API.

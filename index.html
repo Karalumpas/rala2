@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WooCommerce Produktvisning</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-actions {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .file-upload {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .upload-section {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .upload-box {
+            background: white;
+            border: 3px dashed #007bff;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 300px;
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .upload-box:hover {
+            border-color: #0056b3;
+            background: #f0f8ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-box.drag-over {
+            border-color: #28a745;
+            background: #f0fff4;
+            transform: scale(1.02);
+        }
+
+        .upload-box input {
+            display: none;
+        }
+
+        .upload-box.loaded {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 15px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+
+        .upload-box.loaded .upload-icon {
+            color: #28a745;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .shop-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            min-width: 300px;
+        }
+
+        .shop-selector select {
+            border: none;
+            background: transparent;
+            padding: 5px;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .table-container {
+            padding: 25px;
+            overflow-x: auto;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-table th {
+            background: linear-gradient(135deg, #343a40, #495057);
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .product-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        .parent-row {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            font-weight: bold;
+            border-left: 5px solid #2196f3;
+            position: relative;
+        }
+
+        .parent-row:hover {
+            background: linear-gradient(135deg, #bbdefb, #e1bee7);
+        }
+
+        .parent-title {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .collapse-toggle {
+            display: inline-block;
+            margin-right: 8px;
+            font-weight: bold;
+            color: #2196f3;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            padding: 4px;
+            border-radius: 3px;
+        }
+
+        .collapse-toggle:hover {
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .collapse-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .variation-row {
+            background: #fafafa;
+            border-left: 3px solid #ccc;
+            transition: all 0.3s ease;
+        }
+
+        .variation-row.hidden-variation {
+            display: none;
+        }
+
+        .variation-row td:first-child {
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .variation-row td:first-child::before {
+            content: "└─";
+            position: absolute;
+            left: 15px;
+            color: #666;
+        }
+
+        .editable {
+            border: 1px solid transparent;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: transparent;
+            transition: all 0.3s ease;
+            cursor: text;
+            min-width: 80px;
+        }
+
+        .editable:hover {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .editable:focus {
+            outline: none;
+            background: white;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .variation-count {
+            font-size: 0.8em;
+            color: #666;
+            font-weight: normal;
+            margin-left: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stock-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .stock-instock {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stock-outofstock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Shop Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5em;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .shop-list {
+            margin-top: 25px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .shop-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item:last-child {
+            border-bottom: none;
+        }
+
+        .shop-info h3 {
+            margin-bottom: 5px;
+        }
+
+        .shop-info p {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .shop-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-icon.edit {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-icon.delete {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-footer {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .checkbox-cell input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .selected-count {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #007bff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .pagination button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .pagination-info {
+            font-weight: bold;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+        }
+        
+        .page-size-selector select {
+            border: none;
+            background: transparent;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 992px) {
+            .upload-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .upload-box {
+                max-width: 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .stats {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            
+            .stat-item {
+                min-width: calc(50% - 15px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .header-actions {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .product-table {
+                font-size: 12px;
+            }
+            
+            .product-table th,
+            .product-table td {
+                padding: 8px 6px;
+            }
+            
+            .shop-selector {
+                min-width: 100%;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shopping-cart"></i> WooCommerce Produktvisning</h1>
+            <p>Upload dine CSV-filer for at se produkter og variationer</p>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="openShopManager()">
+                    <i class="fas fa-store"></i> Administrer Shops
+                </button>
+            </div>
+        </div>
+
+        <div class="file-upload">
+            <div class="upload-section">
+                <div class="upload-box" id="parentUploadBox">
+                    <div class="upload-icon">📄</div>
+                    <h3>Parent Produkter</h3>
+                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
+                    <input type="file" id="parentFile" accept=".csv" />
+                    <div class="file-status" id="parentStatus"></div>
+                    <div class="drag-overlay">📁 Slip filen her!</div>
+                </div>
+
+                <div class="upload-box" id="variationUploadBox">
+                    <div class="upload-icon">📊</div>
+                    <h3>Variationer</h3>
+                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
+                    <input type="file" id="variationFile" accept=".csv" />
+                    <div class="file-status" id="variationStatus"></div>
+                    <div class="drag-overlay">📁 Slip filen her!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats hidden" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="parentCount">0</div>
+                <div class="stat-label">Parent Produkter</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="variationCount">0</div>
+                <div class="stat-label">Variationer</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="inStockCount">0</div>
+                <div class="stat-label">På Lager</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="selectedCount">0</div>
+                <div class="stat-label">Valgte Produkter</div>
+            </div>
+        </div>
+
+        <div class="controls hidden" id="controls">
+            <div class="shop-selector">
+                <i class="fas fa-store"></i>
+                <select id="shopSelect">
+                    <option value="">Vælg en shop</option>
+                </select>
+            </div>
+            
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Søg efter produktnavn, SKU eller farve...">
+            
+            <div class="selected-count">
+                <i class="fas fa-check-circle"></i>
+                <span id="selectedProductsCount">0</span> valgte
+            </div>
+            
+            <button class="btn btn-success" onclick="sendToWooCommerce()">
+                <i class="fas fa-paper-plane"></i> Send til WooCommerce
+            </button>
+            <button class="btn btn-primary" onclick="exportToCSV()">
+                <i class="fas fa-file-export"></i> Eksporter til CSV
+            </button>
+            <button class="btn btn-primary" onclick="toggleAllProducts()">
+                <i class="fas fa-folder"></i> Fold Alle
+            </button>
+        </div>
+
+        <div class="table-container">
+            <div class="loading" id="loading">
+                Upload begge CSV-filer for at se produkterne
+            </div>
+            <table class="product-table hidden" id="productTable">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                        <th>Produktnavn</th>
+                        <th>SKU</th>
+                        <th>Status</th>
+                        <th>Pris</th>
+                        <th>Farve</th>
+                        <th>Størrelse</th>
+                        <th>Brand</th>
+                        <th>Kategori</th>
+                        <th>Billede</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                </tbody>
+            </table>
+            
+            <!-- Pagination Controls -->
+            <div class="pagination hidden" id="paginationControls">
+                <button id="firstPageBtn" onclick="goToPage(1)" disabled>
+                    <i class="fas fa-step-backward"></i> Første
+                </button>
+                <button id="prevPageBtn" onclick="prevPage()" disabled>
+                    <i class="fas fa-chevron-left"></i> Forrige
+                </button>
+                
+                <div class="pagination-info" id="pageInfo">
+                    Side 1 af 1
+                </div>
+                
+                <button id="nextPageBtn" onclick="nextPage()" disabled>
+                    Næste <i class="fas fa-chevron-right"></i>
+                </button>
+                <button id="lastPageBtn" onclick="goToLastPage()" disabled>
+                    Sidste <i class="fas fa-step-forward"></i>
+                </button>
+                
+                <div class="page-size-selector">
+                    <span>Vis:</span>
+                    <select id="pageSizeSelect" onchange="changePageSize()">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Manager Modal -->
+    <div class="modal" id="shopManagerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-store"></i> Administrer WooCommerce Shops</h2>
+                <button class="close-modal" onclick="closeShopManager()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="shopName">Shop Navn</label>
+                    <input type="text" id="shopName" placeholder="Min Webshop">
+                </div>
+                
+                <div class="form-group">
+                    <label for="shopUrl">Shop URL</label>
+                    <input type="url" id="shopUrl" placeholder="https://min-shop.dk">
+                </div>
+                
+                <div class="form-group">
+                    <label for="consumerKey">Consumer Key</label>
+                    <input type="text" id="consumerKey" placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                
+                <div class="form-group">
+                    <label for="consumerSecret">Consumer Secret</label>
+                    <input type="text" id="consumerSecret" placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                
+                <div class="form-group">
+                    <label for="shopSSL">
+                        <input type="checkbox" id="shopSSL"> Brug SSL (https)
+                    </label>
+                </div>
+                <button class="btn btn-primary" onclick="saveShop()">
+                    <i class="fas fa-save"></i> Gem Shop
+                </button>
+                
+                <div class="shop-list" id="shopList">
+                    <!-- Shops will be listed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeShopManager()">Luk</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let parentData = null;
+        let variationData = null;
+        let combinedData = [];
+        let collapsedProducts = new Set();
+        let allCollapsed = false;
+        let editedData = new Map();
+        let selectedProducts = new Set();
+        let shops = JSON.parse(localStorage.getItem('woocommerceShops')) || [];
+        
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 25;
+        let totalPages = 1;
+        let filteredData = [];
+
+        // DOM Elements
+        const shopManagerModal = document.getElementById('shopManagerModal');
+        const shopSelect = document.getElementById('shopSelect');
+        const shopList = document.getElementById('shopList');
+        const selectedProductsCount = document.getElementById('selectedProductsCount');
+        const paginationControls = document.getElementById('paginationControls');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('parentFile').addEventListener('change', handleParentFile);
+            document.getElementById('variationFile').addEventListener('change', handleVariationFile);
+            document.getElementById('searchBox').addEventListener('input', filterProducts);
+            
+            setupDragAndDrop('parentUploadBox', 'parentFile', handleParentFile);
+            setupDragAndDrop('variationUploadBox', 'variationFile', handleVariationFile);
+            
+            // Load shops
+            renderShops();
+            updateShopSelect();
+        });
+
+        // File handling functions
+        function handleParentFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        parentData = results.data;
+                        updateFileStatus('parentStatus', `✅ ${parentData.length} produkter indlæst`);
+                        document.querySelector('#parentFile').closest('.upload-box').classList.add('loaded');
+                        tryProcessData();
+                    },
+                    error: function(error) {
+                        updateFileStatus('parentStatus', `❌ Fejl: ${error.message}`);
+                    }
+                });
+            }
+        }
+
+        function handleVariationFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        variationData = results.data;
+                        updateFileStatus('variationStatus', `✅ ${variationData.length} variationer indlæst`);
+                        document.querySelector('#variationFile').closest('.upload-box').classList.add('loaded');
+                        tryProcessData();
+                    },
+                    error: function(error) {
+                        updateFileStatus('variationStatus', `❌ Fejl: ${error.message}`);
+                    }
+                });
+            }
+        }
+
+        function updateFileStatus(elementId, message) {
+            document.getElementById(elementId).textContent = message;
+        }
+
+        function setupDragAndDrop(boxId, fileInputId, handler) {
+            const box = document.getElementById(boxId);
+            const fileInput = document.getElementById(fileInputId);
+            const overlay = box.querySelector('.drag-overlay');
+
+            // Click to upload
+            box.addEventListener('click', (e) => {
+                if (e.target === overlay) return;
+                fileInput.click();
+            });
+
+            // Drag and drop events
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                box.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                box.addEventListener(eventName, () => {
+                    box.classList.add('drag-over');
+                    overlay.style.display = 'flex';
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                box.addEventListener(eventName, () => {
+                    box.classList.remove('drag-over');
+                    overlay.style.display = 'none';
+                }, false);
+            });
+
+            box.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                        // Create a fake event object for the handler
+                        const fakeEvent = { target: { files: [file] } };
+                        handler(fakeEvent);
+                    } else {
+                        alert('Venligst upload kun CSV-filer');
+                    }
+                }
+            }, false);
+        }
+
+        function tryProcessData() {
+            if (parentData && variationData) {
+                processAndDisplayData();
+            }
+        }
+
+        function processAndDisplayData() {
+            combinedData = [];
+            selectedProducts.clear();
+            updateSelectedCount();
+            collapsedProducts = new Set();
+            parentData.forEach(parent => {
+                // Tilføj parent produkt
+                combinedData.push({
+                    type: 'parent',
+                    data: parent
+                });
+                // Fold parent sammen som standard
+                collapsedProducts.add(parent.sku);
+                // Find tilhørende variationer
+                const variations = variationData.filter(variation => 
+                    variation.parent_sku === parent.sku
+                );
+                // Tilføj variationer
+                variations.forEach(variation => {
+                    combinedData.push({
+                        type: 'variation',
+                        data: variation,
+                        parent: parent
+                    });
+                });
+            });
+            // Set filtered data to combined data initially
+            filteredData = [...combinedData];
+            // Calculate total pages
+            totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            // Reset to first page
+            currentPage = 1;
+            displayProducts();
+            updateStats();
+            updatePaginationControls();
+            // Vis kontroller og statistikker
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('productTable').classList.remove('hidden');
+            paginationControls.classList.remove('hidden');
+        }
+
+        function displayProducts() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            // Paginate only parent products
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, parentData.length);
+            const pageParents = parentData.slice(startIndex, endIndex);
+            pageParents.forEach(parent => {
+                // Parent row
+                const parentRow = document.createElement('tr');
+                const isSelected = selectedProducts.has(parent.sku);
+                const variationCount = variationData.filter(v => v.parent_sku === parent.sku).length;
+                const isCollapsed = collapsedProducts.has(parent.sku);
+                parentRow.classList.add('parent-row');
+                parentRow.setAttribute('data-parent-sku', parent.sku);
+                parentRow.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="product-checkbox" data-sku="${parent.sku}" 
+                            data-type="parent" ${isSelected ? 'checked' : ''}
+                            onchange="toggleProductSelection(this)">
+                    </td>
+                    <td>
+                        <span class="collapse-toggle ${isCollapsed ? 'collapsed' : ''}" onclick="event.stopPropagation(); toggleVariations('${parent.sku}')">▼</span>
+                        <span class="parent-title" onclick="toggleVariations('${parent.sku}')">
+                            <strong>${parent.post_title || ''}</strong>
+                            <span class="variation-count">${variationCount} variationer</span>
+                        </span>
+                    </td>
+                    <td><strong>${parent.sku || ''}</strong></td>
+                    <td><span class="stock-status stock-${parent.stock_status}">${parent.stock_status || ''}</span></td>
+                    <td>-</td>
+                    <td>${(parent.attribute && parent.attribute.Colour) || parent['attribute:Colour'] || ''}</td>
+                    <td>${(parent.attribute && parent.attribute.Size) || parent['attribute:Size'] || ''}</td>
+                    <td>${parent['attribute:pa_Brand'] || ''}</td>
+                    <td class="editable" contenteditable="true" data-field="category" data-sku="${parent.sku}" onblur="saveEdit(this)">${parent['tax:product_cat'] || ''}</td>
+                    <td>${parent.images ? `<img src="${parent.images}" alt="Product" class="product-image">` : ''}</td>
+                `;
+                tbody.appendChild(parentRow);
+                // Variation rows
+                const variations = variationData.filter(v => v.parent_sku === parent.sku);
+                variations.forEach(variation => {
+                    const variationRow = document.createElement('tr');
+                    const isSelectedVar = selectedProducts.has(variation.sku);
+                    const isHidden = collapsedProducts.has(parent.sku);
+                    variationRow.classList.add('variation-row');
+                    if (isHidden) {
+                        variationRow.classList.add('hidden-variation');
+                    }
+                    variationRow.setAttribute('data-parent-sku', parent.sku);
+                    const currentPrice = editedData.get(`${variation.sku}_price`) || variation.regular_price || '';
+                    const currentCategory = editedData.get(`${parent.sku}_category`) || parent['tax:product_cat'] || '';
+                    variationRow.innerHTML = `
+                        <td class="checkbox-cell">
+                            <input type="checkbox" class="product-checkbox" data-sku="${variation.sku}" 
+                                data-type="variation" data-parent-sku="${parent.sku}" 
+                                ${isSelectedVar ? 'checked' : ''} onchange="toggleProductSelection(this)">
+                        </td>
+                        <td>${parent.post_title || ''}</td>
+                        <td>${variation.sku || ''}</td>
+                        <td><span class="stock-status stock-${variation.stock_status}">${variation.stock_status || ''}</span></td>
+                        <td class="editable" contenteditable="true" data-field="price" data-sku="${variation.sku}" onblur="saveEdit(this)">£${currentPrice}</td>
+                        <td>${variation['meta:attribute_Colour'] || ''}</td>
+                        <td>${variation['meta:attribute_Size'] || ''}</td>
+                        <td>${parent['attribute:pa_Brand'] || ''}</td>
+                        <td>${currentCategory}</td>
+                        <td>${variation.images ? `<img src="${variation.images}" alt="Variation" class="product-image">` : ''}</td>
+                    `;
+                    tbody.appendChild(variationRow);
+                });
+            });
+        }
+
+        function updateStats() {
+            const parentCount = parentData.length;
+            const variationCount = variationData.length;
+            const inStockCount = variationData.filter(v => v.stock_status === 'instock').length;
+            const selectedCount = selectedProducts.size;
+
+            document.getElementById('parentCount').textContent = parentCount;
+            document.getElementById('variationCount').textContent = variationCount;
+            document.getElementById('inStockCount').textContent = inStockCount;
+            document.getElementById('selectedCount').textContent = selectedCount;
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredData = [...combinedData];
+            } else {
+                filteredData = combinedData.filter(item => {
+                    const data = item.data;
+                    const parent = item.parent || data;
+                    
+                    return (
+                        (parent.post_title && parent.post_title.toLowerCase().includes(searchTerm)) ||
+                        (data.sku && data.sku.toLowerCase().includes(searchTerm)) ||
+                        (data['meta:attribute_Colour'] && data['meta:attribute_Colour'].toLowerCase().includes(searchTerm)) ||
+                        (parent['attribute:Colour'] && parent['attribute:Colour'].toLowerCase().includes(searchTerm)) ||
+                        (parent['attribute:pa_Brand'] && parent['attribute:pa_Brand'].toLowerCase().includes(searchTerm))
+                    );
+                });
+            }
+            
+            // Update pagination
+            totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            currentPage = 1; // Reset to first page when filtering
+            
+            displayProducts();
+            updatePaginationControls();
+        }
+
+        function exportToCSV() {
+            const csvData = [];
+            
+            combinedData.forEach(item => {
+                if (item.type === 'parent') {
+                    csvData.push({
+                        Type: 'Parent',
+                        Produktnavn: item.data.post_title || '',
+                        SKU: item.data.sku || '',
+                        Status: item.data.stock_status || '',
+                        Pris: '',
+                        Farve: item.data['attribute:Colour'] || '',
+                        Størrelse: item.data['attribute:Size'] || '',
+                        Brand: item.data['attribute:pa_Brand'] || '',
+                        Kategori: item.data['tax:product_cat'] || ''
+                    });
+                } else {
+                    csvData.push({
+                        Type: 'Variation',
+                        Produktnavn: item.parent.post_title || '',
+                        SKU: item.data.sku || '',
+                        Status: item.data.stock_status || '',
+                        Pris: item.data.regular_price || '',
+                        Farve: item.data['meta:attribute_Colour'] || '',
+                        Størrelse: item.data['meta:attribute_Size'] || '',
+                        Brand: item.parent['attribute:pa_Brand'] || '',
+                        Kategori: item.parent['tax:product_cat'] || ''
+                    });
+                }
+            });
+
+            const csv = Papa.unparse(csvData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'woocommerce_produkter.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function toggleVariations(parentSku) {
+            const isCollapsed = collapsedProducts.has(parentSku);
+            const variations = document.querySelectorAll(`tr.variation-row[data-parent-sku="${parentSku}"]`);
+            const toggle = document.querySelector(`tr.parent-row[data-parent-sku="${parentSku}"] .collapse-toggle`);
+            
+            if (isCollapsed) {
+                collapsedProducts.delete(parentSku);
+                variations.forEach(row => row.classList.remove('hidden-variation'));
+                toggle.classList.remove('collapsed');
+            } else {
+                collapsedProducts.add(parentSku);
+                variations.forEach(row => row.classList.add('hidden-variation'));
+                toggle.classList.add('collapsed');
+            }
+        }
+
+        function toggleAllProducts() {
+            const toggleButton = event.target;
+            
+            if (!allCollapsed) {
+                // Collapse all
+                parentData.forEach(parent => {
+                    collapsedProducts.add(parent.sku);
+                });
+                toggleButton.innerHTML = '<i class="fas fa-folder-open"></i> Fold Alle Ud';
+                allCollapsed = true;
+            } else {
+                // Expand all
+                collapsedProducts.clear();
+                toggleButton.innerHTML = '<i class="fas fa-folder"></i> Fold Alle';
+                allCollapsed = false;
+            }
+            
+            displayProducts();
+        }
+
+        function saveEdit(element) {
+            const field = element.getAttribute('data-field');
+            const sku = element.getAttribute('data-sku');
+            let value = element.textContent.trim();
+            
+            if (field === 'price') {
+                // Remove £ symbol if present
+                value = value.replace('£', '');
+                // Validate price format
+                if (value && !isNaN(value)) {
+                    editedData.set(`${sku}_price`, value);
+                    element.textContent = `£${value}`;
+                    element.style.background = '#d1ecf1';
+                    setTimeout(() => {
+                        element.style.background = '';
+                    }, 1000);
+                } else if (value === '') {
+                    editedData.set(`${sku}_price`, '');
+                    element.textContent = '£';
+                }
+            } else if (field === 'category') {
+                editedData.set(`${sku}_category`, value);
+                element.style.background = '#d1ecf1';
+                setTimeout(() => {
+                    element.style.background = '';
+                }, 1000);
+                
+                // Update all variations for this parent
+                const variations = document.querySelectorAll(`tr.variation-row[data-parent-sku="${sku}"] td:nth-child(9)`);
+                variations.forEach(cell => {
+                    cell.textContent = value;
+                });
+            }
+        }
+
+        // Shop Management Functions
+        function openShopManager() {
+            shopManagerModal.classList.add('active');
+            renderShops();
+        }
+
+        function closeShopManager() {
+            shopManagerModal.classList.remove('active');
+        }
+
+        function renderShops() {
+            shopList.innerHTML = '';
+            
+            if (shops.length === 0) {
+                shopList.innerHTML = '<div class="shop-item"><p>Ingen shops tilføjet endnu</p></div>';
+                return;
+            }
+            
+            shops.forEach((shop, index) => {
+                const shopItem = document.createElement('div');
+                shopItem.className = 'shop-item';
+                // Status farve og tekst
+                let statusColor = '#ffc107';
+                let statusText = 'Ukendt';
+                if (shop.apiStatus === 'success') {
+                    statusColor = '#28a745';
+                    statusText = 'Forbundet';
+                } else if (shop.apiStatus === 'error') {
+                    statusColor = '#dc3545';
+                    statusText = 'Fejl';
+                }
+                shopItem.innerHTML = `
+                    <div class="shop-info">
+                        <h3>${shop.name}</h3>
+                        <p>${shop.url}</p>
+                        <p><small>Key: ${shop.consumerKey.substring(0, 8)}...${shop.consumerKey.slice(-8)}</small></p>
+                        <p><small>SSL: ${shop.ssl ? 'Ja' : 'Nej'}</small></p>
+                        <p><span style="color:${statusColor};font-weight:bold;">API status: ${statusText}</span> <button style="margin-left:10px;" onclick="testApiConnection(${index})">Test</button></p>
+                    </div>
+                    <div class="shop-actions">
+                        <button class="btn-icon edit" onclick="editShop(${index})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" onclick="deleteShop(${index})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                shopList.appendChild(shopItem);
+            });
+        }
+
+        function updateShopSelect() {
+            shopSelect.innerHTML = '<option value="">Vælg en shop</option>';
+            shops.forEach((shop, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = shop.name + (shop.ssl ? ' (SSL)' : '');
+                shopSelect.appendChild(option);
+            });
+        }
+
+        function saveShop() {
+            const name = document.getElementById('shopName').value;
+            const url = document.getElementById('shopUrl').value;
+            const key = document.getElementById('consumerKey').value;
+            const secret = document.getElementById('consumerSecret').value;
+            const ssl = document.getElementById('shopSSL').checked;
+            if (!name || !url || !key || !secret) {
+                alert('Udfyld alle felter');
+                return;
+            }
+            const newShop = {
+                id: Date.now(),
+                name: name,
+                url: url,
+                consumerKey: key,
+                consumerSecret: secret,
+                ssl: ssl,
+                apiStatus: 'unknown'
+            };
+            shops.push(newShop);
+            localStorage.setItem('woocommerceShops', JSON.stringify(shops));
+            // Clear form
+            document.getElementById('shopName').value = '';
+            document.getElementById('shopUrl').value = '';
+            document.getElementById('consumerKey').value = '';
+            document.getElementById('consumerSecret').value = '';
+            document.getElementById('shopSSL').checked = false;
+            renderShops();
+            updateShopSelect();
+            alert('Shop gemt!');
+        }
+
+        function editShop(index) {
+            const shop = shops[index];
+            document.getElementById('shopName').value = shop.name;
+            document.getElementById('shopUrl').value = shop.url;
+            document.getElementById('consumerKey').value = shop.consumerKey;
+            document.getElementById('consumerSecret').value = shop.consumerSecret;
+            document.getElementById('shopSSL').checked = shop.ssl || false;
+        }
+
+        function deleteShop(index) {
+            if (confirm('Er du sikker på du vil slette denne shop?')) {
+                shops.splice(index, 1);
+                localStorage.setItem('woocommerceShops', JSON.stringify(shops));
+                renderShops();
+                updateShopSelect();
+            }
+        }
+
+        // Test API connection (demo: always success after 1s)
+        function testApiConnection(index) {
+            const shop = shops[index];
+            // Her ville du lave et rigtigt API kald til WooCommerce REST API
+            // Demo: simulerer success/failure
+            shop.apiStatus = 'testing';
+            renderShops();
+            setTimeout(() => {
+                // Simulerer success hvis SSL er slået til, ellers fejl
+                if (shop.ssl) {
+                    shop.apiStatus = 'success';
+                } else {
+                    shop.apiStatus = 'error';
+                }
+                localStorage.setItem('woocommerceShops', JSON.stringify(shops));
+                renderShops();
+            }, 1000);
+        }
+
+        // Product Selection Functions
+        function toggleProductSelection(checkbox) {
+            const sku = checkbox.getAttribute('data-sku');
+            
+            if (checkbox.checked) {
+                selectedProducts.add(sku);
+            } else {
+                selectedProducts.delete(sku);
+                // Uncheck "select all" if any checkbox is unchecked
+                document.getElementById('selectAll').checked = false;
+            }
+            
+            updateSelectedCount();
+        }
+
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                const sku = cb.getAttribute('data-sku');
+                
+                if (checkbox.checked) {
+                    selectedProducts.add(sku);
+                } else {
+                    selectedProducts.delete(sku);
+                }
+            });
+            
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            selectedProductsCount.textContent = selectedProducts.size;
+            document.getElementById('selectedCount').textContent = selectedProducts.size;
+        }
+
+        // Send to WooCommerce
+        function sendToWooCommerce() {
+            const shopIndex = shopSelect.value;
+            
+            if (shopIndex === '') {
+                alert('Vælg en shop først');
+                return;
+            }
+            
+            if (selectedProducts.size === 0) {
+                alert('Vælg mindst ét produkt');
+                return;
+            }
+            
+            const shop = shops[shopIndex];
+            const selectedSkus = Array.from(selectedProducts);
+            
+            // Show confirmation
+            if (!confirm(`Er du sikker på du vil sende ${selectedProducts.size} produkter til ${shop.name}?`)) {
+                return;
+            }
+            
+            // Simulate sending to WooCommerce
+            alert(`Sender ${selectedProducts.size} produkter til ${shop.name}...\n\nDette er en demo. I en rigtig applikation ville dette sende produkterne via WooCommerce REST API.`);
+            
+            // Reset selection after sending
+            selectedProducts.clear();
+            document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            updateSelectedCount();
+            
+            alert('Produkter sendt til WooCommerce!');
+        }
+
+        // Pagination Functions
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayProducts();
+                updatePaginationControls();
+            }
+        }
+        
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayProducts();
+                updatePaginationControls();
+            }
+        }
+        
+        function goToPage(page) {
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayProducts();
+                updatePaginationControls();
+            }
+        }
+        
+        function goToLastPage() {
+            currentPage = totalPages;
+            displayProducts();
+            updatePaginationControls();
+        }
+        
+        function changePageSize() {
+            itemsPerPage = parseInt(document.getElementById('pageSizeSelect').value);
+            totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            // Ensure current page is within bounds and at least 1
+            if (totalPages < 1) {
+                totalPages = 1;
+            }
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+            displayProducts();
+            updatePaginationControls();
+        }
+        
+        function updatePaginationControls() {
+            const pageInfo = document.getElementById('pageInfo');
+            const firstPageBtn = document.getElementById('firstPageBtn');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            const lastPageBtn = document.getElementById('lastPageBtn');
+            
+            pageInfo.textContent = `Side ${currentPage} af ${totalPages}`;
+            
+            // Update button states
+            firstPageBtn.disabled = currentPage === 1;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+            lastPageBtn.disabled = currentPage === totalPages;
+        }
+    </script>
+</body>
+</html>

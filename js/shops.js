@@ -1,0 +1,3 @@
+// Shop management JS for ralawise-v2
+
+// ...shop management functions from index.html will be moved here...

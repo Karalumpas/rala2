@@ -159,6 +159,33 @@
                     <div class="shop-list" id="shopList">
                         <!-- Shops will be listed here -->
                     </div>
+                    <button class="btn btn-success" onclick="showShopForm()" style="margin-top:15px;">
+                        <i class="fas fa-plus"></i> Tilføj ny shop
+                    </button>
+                </div>
+                <div id="shopFormSection" class="hidden" style="margin-top:20px;">
+                    <form id="shopForm">
+                        <div class="form-group">
+                            <label for="shopName">Navn</label>
+                            <input type="text" id="shopName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="shopUrl">URL</label>
+                            <input type="url" id="shopUrl" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="shopApiKey">API nøgle</label>
+                            <input type="text" id="shopApiKey" required>
+                        </div>
+                        <div id="testResult" style="margin-bottom:10px;"></div>
+                        <button type="button" class="btn btn-secondary" onclick="testShopConnection()">
+                            <i class="fas fa-plug"></i> Test forbindelse
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Gem shop
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="hideShopForm()">Annuller</button>
+                    </form>
                 </div>
             </div>
             <div class="modal-footer">

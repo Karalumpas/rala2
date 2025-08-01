@@ -75,3 +75,8 @@ function saveEdit(element) {
         variations.forEach(cell => { cell.textContent = value; });
     }
 }
+
+function collapseUploadSection() {
+    const section = document.getElementById('fileUploadSection');
+    if (section) section.classList.add('collapsed');
+}

@@ -65,6 +65,7 @@ function processAndDisplayData() {
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('productTable').classList.remove('hidden');
     paginationControls.classList.remove('hidden');
+    if (window.collapseUploadSection) collapseUploadSection();
 }
 
 function displayProducts() {

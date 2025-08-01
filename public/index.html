@@ -18,27 +18,6 @@
             </div>
         </div>
 
-        <div class="file-upload">
-            <div class="upload-section">
-                <div class="upload-box" id="parentUploadBox">
-                    <div class="upload-icon">📄</div>
-                    <h3>Parent Produkter</h3>
-                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
-                    <input type="file" id="parentFile" accept=".csv" />
-                    <div class="file-status" id="parentStatus"></div>
-                    <div class="drag-overlay">📁 Slip filen her!</div>
-                </div>
-
-                <div class="upload-box" id="variationUploadBox">
-                    <div class="upload-icon">📊</div>
-                    <h3>Variationer</h3>
-                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
-                    <input type="file" id="variationFile" accept=".csv" />
-                    <div class="file-status" id="variationStatus"></div>
-                    <div class="drag-overlay">📁 Slip filen her!</div>
-                </div>
-            </div>
-        </div>
 
         <div class="stats hidden" id="stats">
             <div class="stat-item">
@@ -155,6 +134,28 @@
                         <option value="100">100</option>
                         <option value="250">250</option>
                     </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="file-upload" id="fileUploadSection">
+            <div class="upload-section">
+                <div class="upload-box" id="parentUploadBox">
+                    <div class="upload-icon">📄</div>
+                    <h3>Parent Produkter</h3>
+                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
+                    <input type="file" id="parentFile" accept=".csv" />
+                    <div class="file-status" id="parentStatus"></div>
+                    <div class="drag-overlay">📁 Slip filen her!</div>
+                </div>
+
+                <div class="upload-box" id="variationUploadBox">
+                    <div class="upload-icon">📊</div>
+                    <h3>Variationer</h3>
+                    <p>Træk CSV-fil hertil eller klik for at vælge</p>
+                    <input type="file" id="variationFile" accept=".csv" />
+                    <div class="file-status" id="variationStatus"></div>
+                    <div class="drag-overlay">📁 Slip filen her!</div>
                 </div>
             </div>
         </div>

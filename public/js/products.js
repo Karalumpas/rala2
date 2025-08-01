@@ -1,5 +1,42 @@
 // Product and variation logic for ralawise-v2
 
+function tryProcessData() {
+    if (parentData && variationData) {
+        processAndDisplayData();
+    }
+}
+
+function processAndDisplayData() {
+    combinedData = [];
+    selectedProducts.clear();
+    updateSelectedCount();
+    collapsedProducts = new Set();
+
+    parentData.forEach(parent => {
+        combinedData.push({ type: 'parent', data: parent });
+        collapsedProducts.add(parent.sku);
+
+        const variations = variationData.filter(v => v.parent_sku === parent.sku);
+        variations.forEach(variation => {
+            combinedData.push({ type: 'variation', data: variation, parent });
+        });
+    });
+
+    filteredData = [...combinedData];
+    totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    currentPage = 1;
+
+    displayProducts();
+    updateStats();
+    updatePaginationControls();
+
+    document.getElementById('controls').classList.remove('hidden');
+    document.getElementById('stats').classList.remove('hidden');
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('productTable').classList.remove('hidden');
+    paginationControls.classList.remove('hidden');
+}
+
 function displayProducts() {
     const tbody = document.getElementById('productTableBody');
     tbody.innerHTML = '';
@@ -67,4 +104,53 @@ function displayProducts() {
             tbody.appendChild(variationRow);
         });
     });
+}
+
+function toggleProductSelection(checkbox) {
+    const sku = checkbox.getAttribute('data-sku');
+    if (checkbox.checked) {
+        selectedProducts.add(sku);
+    } else {
+        selectedProducts.delete(sku);
+        document.getElementById('selectAll').checked = false;
+    }
+    updateSelectedCount();
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+        const sku = cb.getAttribute('data-sku');
+        if (checkbox.checked) {
+            selectedProducts.add(sku);
+        } else {
+            selectedProducts.delete(sku);
+        }
+    });
+    updateSelectedCount();
+}
+
+function sendToWooCommerce() {
+    const shopIndex = shopSelect.value;
+    if (shopIndex === '') {
+        alert('Vælg en shop først');
+        return;
+    }
+    if (selectedProducts.size === 0) {
+        alert('Vælg mindst ét produkt');
+        return;
+    }
+    const shop = shops[shopIndex];
+    if (!confirm(`Er du sikker på du vil sende ${selectedProducts.size} produkter til ${shop.name}?`)) {
+        return;
+    }
+    alert(`Sender ${selectedProducts.size} produkter til ${shop.name}...\n\nDette er en demo. I en rigtig applikation ville dette sende produkterne via WooCommerce REST API.`);
+
+    selectedProducts.clear();
+    document.querySelectorAll('.product-checkbox').forEach(cb => (cb.checked = false));
+    document.getElementById('selectAll').checked = false;
+    updateSelectedCount();
+
+    alert('Produkter sendt til WooCommerce!');
 }

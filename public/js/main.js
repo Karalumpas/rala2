@@ -7,6 +7,7 @@ window.allCollapsed = false;
 window.editedData = new Map();
 window.selectedProducts = new Set();
 window.shops = JSON.parse(localStorage.getItem('woocommerceShops')) || [];
+window.editingIndex = null;
 
 window.currentPage = 1;
 window.itemsPerPage = 25;
@@ -19,6 +20,8 @@ window.shopSelect = document.getElementById('shopSelect');
 window.shopList = document.getElementById('shopList');
 window.selectedProductsCount = document.getElementById('selectedProductsCount');
 window.paginationControls = document.getElementById('paginationControls');
+window.shopListSection = document.getElementById('shopListSection');
+window.shopFormSection = document.getElementById('shopFormSection');
 
 // Initialisering af event listeners
 document.addEventListener('DOMContentLoaded', function() {

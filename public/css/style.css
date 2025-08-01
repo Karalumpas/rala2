@@ -122,15 +122,21 @@
             color: #28a745;
         }
 
-        .controls {
-            background: #f8f9fa;
-            padding: 20px 25px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+.controls {
+    background: #f8f9fa;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.shop-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
         .shop-selector {
             display: flex;

@@ -588,6 +588,22 @@
             align-items: center;
             gap: 5px;
         }
+
+        .exchange-rate {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .exchange-rate input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
         
         /* Pagination */
         .pagination {

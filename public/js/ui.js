@@ -56,7 +56,8 @@ function saveEdit(element) {
         value = value.replace('£', '');
         if (value && !isNaN(value)) {
             editedData.set(`${sku}_price`, value);
-            element.textContent = `£${value}`;
+            const displayPrice = (parseFloat(value) * (1 + profitMarginPercent / 100)).toFixed(2);
+            element.textContent = `£${displayPrice}`;
             element.style.background = '#d1ecf1';
             setTimeout(() => { element.style.background = ''; }, 1000);
         } else if (value === '') {
@@ -70,4 +71,10 @@ function saveEdit(element) {
         const variations = document.querySelectorAll(`tr.variation-row[data-parent-sku="${sku}"] td:nth-child(9)`);
         variations.forEach(cell => { cell.textContent = value; });
     }
+}
+
+function updateProfitMargin(value) {
+    const val = parseFloat(value);
+    profitMarginPercent = isNaN(val) ? 0 : val;
+    displayProducts();
 }

@@ -121,12 +121,17 @@ function exportToCSV() {
                 Kategori: item.data['tax:product_cat'] || ''
             });
         } else {
+            const basePrice = editedData.get(`${item.data.sku}_price`) || item.data.regular_price || '';
+            let priceWithProfit = basePrice;
+            if (basePrice !== '' && !isNaN(parseFloat(basePrice))) {
+                priceWithProfit = (parseFloat(basePrice) * (1 + profitMarginPercent / 100)).toFixed(2);
+            }
             csvData.push({
                 Type: 'Variation',
                 Produktnavn: item.parent.post_title || '',
                 SKU: item.data.sku || '',
                 Status: item.data.stock_status || '',
-                Pris: item.data.regular_price || '',
+                Pris: priceWithProfit,
                 Farve: item.data['meta:attribute_Colour'] || '',
                 Størrelse: item.data['meta:attribute_Size'] || '',
                 Brand: item.parent['attribute:pa_Brand'] || '',

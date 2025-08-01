@@ -13,6 +13,7 @@ window.currentPage = 1;
 window.itemsPerPage = 25;
 window.totalPages = 1;
 window.filteredData = [];
+window.profitMarginPercent = 0;
 
 // DOM Elements
 window.shopManagerModal = document.getElementById('shopManagerModal');
@@ -28,6 +29,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('parentFile').addEventListener('change', window.handleParentFile);
     document.getElementById('variationFile').addEventListener('change', window.handleVariationFile);
     document.getElementById('searchBox').addEventListener('input', window.filterProducts);
+    const profitInput = document.getElementById('profitMarginInput');
+    if (profitInput) {
+        profitInput.addEventListener('input', function(e) {
+            if (window.updateProfitMargin) window.updateProfitMargin(e.target.value);
+        });
+    }
 
     if (window.setupDragAndDrop) {
         window.setupDragAndDrop('parentUploadBox', 'parentFile', window.handleParentFile);

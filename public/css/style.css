@@ -161,6 +161,21 @@
             transition: border-color 0.3s;
         }
 
+        .profit-input {
+            width: 100px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .profit-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
         .search-box:focus {
             outline: none;
             border-color: #007bff;

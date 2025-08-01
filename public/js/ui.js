@@ -56,8 +56,10 @@ function saveEdit(element) {
         value = value.replace('£', '');
         if (value && !isNaN(value)) {
             editedData.set(`${sku}_price`, value);
-            const num = parseFloat(value);
-            const displayValue = includeVAT ? (num * (1 + VAT_RATE)).toFixed(2) : value;
+            let num = parseFloat(value);
+            num = applyProfitMargin(num);
+            if (includeVAT) num = num * (1 + VAT_RATE);
+            const displayValue = num.toFixed(2);
             element.textContent = `£${displayValue}`;
             element.style.background = '#d1ecf1';
             setTimeout(() => { element.style.background = ''; }, 1000);

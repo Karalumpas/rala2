@@ -3,6 +3,16 @@
 // Default exchange rate from GBP to DKK. Can be adjusted via the
 // input field with id="exchangeRate" in index.html.
 window.GBP_TO_DKK_RATE = 8.5;
+// Default profit margin percentage applied to prices
+window.profitMarginPercent = 0;
+
+// Apply profit margin to a GBP price
+function applyProfitMargin(gbp) {
+    const val = parseFloat(gbp);
+    const margin = parseFloat(window.profitMarginPercent) || 0;
+    if (isNaN(val)) return val;
+    return val * (1 + margin / 100);
+}
 
 // Convert a price in GBP to DKK using the configurable exchange rate
 // If the provided value is empty or not numeric, an empty string is returned
@@ -136,7 +146,8 @@ function exportToCSV() {
             });
         } else {
             const priceGBP = editedData.get(`${item.data.sku}_price`) ?? item.data.regular_price;
-            const priceDKK = convertGBPtoDKK(priceGBP);
+            const withProfit = applyProfitMargin(priceGBP);
+            const priceDKK = convertGBPtoDKK(withProfit);
             csvData.push({
                 Type: 'Variation',
                 Produktnavn: item.parent.post_title || '',

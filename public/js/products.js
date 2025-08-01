@@ -116,8 +116,10 @@ function displayProducts() {
             const basePrice = editedData.get(`${variation.sku}_price`) || variation.regular_price || '';
             let displayPrice = basePrice;
             const numPrice = parseFloat(basePrice);
-            if (!isNaN(numPrice) && includeVAT) {
-                displayPrice = (numPrice * (1 + VAT_RATE)).toFixed(2);
+            if (!isNaN(numPrice)) {
+                let priceWithProfit = applyProfitMargin(numPrice);
+                if (includeVAT) priceWithProfit *= (1 + VAT_RATE);
+                displayPrice = priceWithProfit.toFixed(2);
             }
             const currentCategory = editedData.get(`${parent.sku}_category`) || parent['tax:product_cat'] || '';
             variationRow.innerHTML = `
@@ -185,7 +187,8 @@ function sendToWooCommerce() {
         const item = combinedData.find(i => i.data.sku === sku && i.type === 'variation');
         if (item) {
             const priceGBP = editedData.get(`${sku}_price`) ?? item.data.regular_price;
-            const priceDKK = convertGBPtoDKK(priceGBP);
+            const withProfit = applyProfitMargin(priceGBP);
+            const priceDKK = convertGBPtoDKK(withProfit);
             productsToSend.push({ sku: sku, price: priceDKK });
         }
     });

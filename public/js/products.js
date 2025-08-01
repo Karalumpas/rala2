@@ -83,18 +83,23 @@ function displayProducts() {
                 variationRow.classList.add('hidden-variation');
             }
             variationRow.setAttribute('data-parent-sku', parent.sku);
-            const currentPrice = editedData.get(`${variation.sku}_price`) || variation.regular_price || '';
+            const basePrice = editedData.get(`${variation.sku}_price`) || variation.regular_price || '';
+            let displayPrice = basePrice;
+            const numPrice = parseFloat(basePrice);
+            if (!isNaN(numPrice) && includeVAT) {
+                displayPrice = (numPrice * (1 + VAT_RATE)).toFixed(2);
+            }
             const currentCategory = editedData.get(`${parent.sku}_category`) || parent['tax:product_cat'] || '';
             variationRow.innerHTML = `
                 <td class="checkbox-cell">
-                    <input type="checkbox" class="product-checkbox" data-sku="${variation.sku}" 
-                        data-type="variation" data-parent-sku="${parent.sku}" 
+                    <input type="checkbox" class="product-checkbox" data-sku="${variation.sku}"
+                        data-type="variation" data-parent-sku="${parent.sku}"
                         ${isSelectedVar ? 'checked' : ''} onchange="toggleProductSelection(this)">
                 </td>
                 <td>${parent.post_title || ''}</td>
                 <td>${variation.sku || ''}</td>
                 <td><span class="stock-status stock-${variation.stock_status}">${variation.stock_status || ''}</span></td>
-                <td class="editable" contenteditable="true" data-field="price" data-sku="${variation.sku}" onblur="saveEdit(this)">£${currentPrice}</td>
+                <td class="editable" contenteditable="true" data-field="price" data-sku="${variation.sku}" onblur="saveEdit(this)">£${displayPrice}</td>
                 <td>${variation['meta:attribute_Colour'] || ''}</td>
                 <td>${variation['meta:attribute_Size'] || ''}</td>
                 <td>${parent['attribute:pa_Brand'] || ''}</td>

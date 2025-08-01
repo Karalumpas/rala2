@@ -14,6 +14,9 @@ window.itemsPerPage = 25;
 window.totalPages = 1;
 window.filteredData = [];
 
+// Profit margin
+window.profitMarginPercent = 0;
+
 // VAT settings
 window.VAT_RATE = 0.25; // 25%
 window.includeVAT = false;
@@ -27,6 +30,7 @@ window.paginationControls = document.getElementById('paginationControls');
 window.shopListSection = document.getElementById('shopListSection');
 window.shopFormSection = document.getElementById('shopFormSection');
 window.vatToggle = document.getElementById('vatToggle');
+window.profitMarginInput = document.getElementById('profitMargin');
 
 // Initialisering af event listeners
 document.addEventListener('DOMContentLoaded', function() {
@@ -37,6 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
         window.includeVAT = e.target.checked;
         if (window.displayProducts) window.displayProducts();
     });
+    if (window.profitMarginInput) {
+        window.profitMarginPercent = parseFloat(window.profitMarginInput.value) || 0;
+        window.profitMarginInput.addEventListener('input', function(e) {
+            window.profitMarginPercent = parseFloat(e.target.value) || 0;
+            if (window.displayProducts) window.displayProducts();
+        });
+    }
 
     if (window.setupDragAndDrop) {
         window.setupDragAndDrop('parentUploadBox', 'parentFile', window.handleParentFile);

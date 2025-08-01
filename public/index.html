@@ -14,15 +14,7 @@
             <h1><i class="fas fa-shopping-cart"></i> WooCommerce Produktvisning</h1>
             <p>Upload dine CSV-filer for at se produkter og variationer</p>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="openShopManager()">
-                    <i class="fas fa-store"></i> Administrer Shops
-                </button>
-                <div class="shop-selector" style="margin-left:15px;">
-                    <i class="fas fa-store"></i>
-                    <select id="shopSelect">
-                        <option value="">Vælg en shop</option>
-                    </select>
-                </div>
+                <!-- Shop controls moved to main controls section -->
             </div>
         </div>
 
@@ -68,6 +60,18 @@
         </div>
 
         <div class="controls hidden" id="controls">
+            <div class="shop-controls">
+                <button class="btn-icon btn-secondary" onclick="openShopManager()" title="Administrer Webshops">
+                    <i class="fas fa-store"></i>
+                </button>
+                <div class="shop-selector">
+                    <i class="fas fa-store"></i>
+                    <select id="shopSelect">
+                        <option value="">Vælg en shop</option>
+                    </select>
+                </div>
+            </div>
+
             <input type="text" class="search-box" id="searchBox" placeholder="🔍 Søg efter produktnavn, SKU eller farve...">
 
             <label class="vat-toggle">

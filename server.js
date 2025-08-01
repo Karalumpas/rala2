@@ -62,13 +62,38 @@ app.delete('/api/shops/:id', (req, res) => {
 app.get('/api/products/:shopId', async (req, res) => {
   const shop = shops.find((s) => s.id === req.params.shopId);
   if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
   const baseUrl = shop.url.replace(/\/$/, '');
-  const url = `${baseUrl}/wp-json/wc/v3/products?consumer_key=${shop.consumerKey}&consumer_secret=${shop.consumerSecret}`;
+  const auth = `consumer_key=${shop.consumerKey}&consumer_secret=${shop.consumerSecret}`;
+
+  const productsUrl = `${baseUrl}/wp-json/wc/v3/products?${auth}`;
   try {
-    const response = await fetch(url);
-    if (!response.ok) return res.status(response.status).json({ error: await response.text() });
+    const response = await fetch(productsUrl);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: await response.text() });
+    }
+
     const products = await response.json();
-    res.json({ products });
+    const variations = [];
+
+    for (const product of products) {
+      try {
+        const varUrl = `${baseUrl}/wp-json/wc/v3/products/${product.id}/variations?${auth}`;
+        const varRes = await fetch(varUrl);
+        if (!varRes.ok) {
+          console.error(`Failed to fetch variations for product ${product.id}`);
+          continue;
+        }
+        const varData = await varRes.json();
+        varData.forEach(v => {
+          variations.push({ parent_id: product.id, parent_sku: product.sku, ...v });
+        });
+      } catch (e) {
+        console.error(`Error fetching variations for product ${product.id}`, e);
+      }
+    }
+
+    res.json({ products, variations });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch products' });

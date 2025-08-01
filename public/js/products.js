@@ -22,6 +22,21 @@ function mapApiProduct(p) {
     };
 }
 
+function mapApiVariation(v) {
+    const colourAttr = v.attributes.find(a => /colour|color/i.test(a.name));
+    const sizeAttr = v.attributes.find(a => /size/i.test(a.name));
+    const imgSrc = (v.image && v.image.src) || (v.images && v.images[0] && v.images[0].src) || '';
+    return {
+        sku: v.sku,
+        stock_status: v.stock_status,
+        regular_price: v.regular_price,
+        'meta:attribute_Colour': colourAttr && (colourAttr.option || (colourAttr.options && colourAttr.options[0])),
+        'meta:attribute_Size': sizeAttr && (sizeAttr.option || (sizeAttr.options && sizeAttr.options[0])),
+        images: imgSrc,
+        parent_sku: v.parent_sku
+    };
+}
+
 async function loadProductsForShop(index) {
     const shop = shops[index];
     if (!shop) return;
@@ -29,7 +44,7 @@ async function loadProductsForShop(index) {
         const res = await fetch(`/api/products/${shop.id}`);
         const data = await res.json();
         parentData = data.products.map(mapApiProduct);
-        variationData = [];
+        variationData = data.variations.map(mapApiVariation);
         tryProcessData();
     } catch (err) {
         console.error('Failed to load products', err);

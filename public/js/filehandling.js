@@ -1,5 +1,19 @@
 // File handling and CSV import/export for ralawise-v2
 
+// Default exchange rate from GBP to DKK. Can be adjusted via the
+// input field with id="exchangeRate" in index.html.
+window.GBP_TO_DKK_RATE = 8.5;
+
+// Convert a price in GBP to DKK using the configurable exchange rate
+// If the provided value is empty or not numeric, an empty string is returned
+function convertGBPtoDKK(gbp) {
+    const rateInput = document.getElementById('exchangeRate');
+    const rate = rateInput ? parseFloat(rateInput.value) : window.GBP_TO_DKK_RATE;
+    const val = parseFloat(gbp);
+    if (isNaN(val) || isNaN(rate)) return '';
+    return (val * rate).toFixed(2);
+}
+
 function handleParentFile(event) {
     const file = event.target.files[0];
     if (file) {
@@ -121,12 +135,14 @@ function exportToCSV() {
                 Kategori: item.data['tax:product_cat'] || ''
             });
         } else {
+            const priceGBP = editedData.get(`${item.data.sku}_price`) ?? item.data.regular_price;
+            const priceDKK = convertGBPtoDKK(priceGBP);
             csvData.push({
                 Type: 'Variation',
                 Produktnavn: item.parent.post_title || '',
                 SKU: item.data.sku || '',
                 Status: item.data.stock_status || '',
-                Pris: item.data.regular_price || '',
+                Pris: priceDKK,
                 Farve: item.data['meta:attribute_Colour'] || '',
                 Størrelse: item.data['meta:attribute_Size'] || '',
                 Brand: item.parent['attribute:pa_Brand'] || '',

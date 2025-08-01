@@ -6,7 +6,7 @@ window.collapsedProducts = new Set();
 window.allCollapsed = false;
 window.editedData = new Map();
 window.selectedProducts = new Set();
-window.shops = JSON.parse(localStorage.getItem('woocommerceShops')) || [];
+window.shops = [];
 window.editingIndex = null;
 
 window.currentPage = 1;
@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
         window.setupDragAndDrop('variationUploadBox', 'variationFile', window.handleVariationFile);
     }
 
-    // Load shops
-    if (window.renderShops) window.renderShops();
-    if (window.updateShopSelect) window.updateShopSelect();
+    if (window.shopSelect) {
+        shopSelect.addEventListener('change', function() {
+            if (this.value !== '') loadProductsForShop(parseInt(this.value, 10));
+        });
+    }
 });

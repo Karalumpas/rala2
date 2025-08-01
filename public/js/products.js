@@ -6,6 +6,36 @@ function tryProcessData() {
     }
 }
 
+function mapApiProduct(p) {
+    const colourAttr = p.attributes.find(a => /colour|color/i.test(a.name));
+    const sizeAttr = p.attributes.find(a => /size/i.test(a.name));
+    const brandAttr = p.attributes.find(a => /brand/i.test(a.name));
+    return {
+        post_title: p.name,
+        sku: p.sku,
+        stock_status: p.stock_status,
+        'attribute:Colour': colourAttr && colourAttr.options[0],
+        'attribute:Size': sizeAttr && sizeAttr.options[0],
+        'attribute:pa_Brand': brandAttr && brandAttr.options[0],
+        'tax:product_cat': p.categories.map(c => c.name).join(', '),
+        images: p.images && p.images[0] ? p.images[0].src : ''
+    };
+}
+
+async function loadProductsForShop(index) {
+    const shop = shops[index];
+    if (!shop) return;
+    try {
+        const res = await fetch(`/api/products/${shop.id}`);
+        const data = await res.json();
+        parentData = data.products.map(mapApiProduct);
+        variationData = [];
+        tryProcessData();
+    } catch (err) {
+        console.error('Failed to load products', err);
+    }
+}
+
 function processAndDisplayData() {
     combinedData = [];
     selectedProducts.clear();
@@ -150,7 +180,18 @@ function sendToWooCommerce() {
     if (!confirm(`Er du sikker på du vil sende ${selectedProducts.size} produkter til ${shop.name}?`)) {
         return;
     }
+    const productsToSend = [];
+    selectedProducts.forEach(sku => {
+        const item = combinedData.find(i => i.data.sku === sku && i.type === 'variation');
+        if (item) {
+            const priceGBP = editedData.get(`${sku}_price`) ?? item.data.regular_price;
+            const priceDKK = convertGBPtoDKK(priceGBP);
+            productsToSend.push({ sku: sku, price: priceDKK });
+        }
+    });
+
     alert(`Sender ${selectedProducts.size} produkter til ${shop.name}...\n\nDette er en demo. I en rigtig applikation ville dette sende produkterne via WooCommerce REST API.`);
+    console.log('Produkter der sendes:', productsToSend);
 
     selectedProducts.clear();
     document.querySelectorAll('.product-checkbox').forEach(cb => (cb.checked = false));

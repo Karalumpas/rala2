@@ -22,6 +22,43 @@ app.get('/api/shops', (req, res) => {
   res.json(sanitized);
 });
 
+function validateShopFields(body) {
+  const { name, url, consumerKey, consumerSecret } = body;
+  if (!name || !url || !consumerKey || !consumerSecret) {
+    return false;
+  }
+  return true;
+}
+
+app.post('/api/shops', (req, res) => {
+  if (!validateShopFields(req.body)) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const { id, name, url, consumerKey, consumerSecret } = req.body;
+  const shopId = id || String(Date.now());
+  const newShop = { id: shopId, name, url, consumerKey, consumerSecret };
+  shops.push(newShop);
+  res.status(201).json({ id: newShop.id, name: newShop.name, url: newShop.url });
+});
+
+app.put('/api/shops/:id', (req, res) => {
+  if (!validateShopFields(req.body)) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const index = shops.findIndex((s) => s.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Shop not found' });
+  const { name, url, consumerKey, consumerSecret } = req.body;
+  shops[index] = { id: shops[index].id, name, url, consumerKey, consumerSecret };
+  res.json({ id: shops[index].id, name, url });
+});
+
+app.delete('/api/shops/:id', (req, res) => {
+  const index = shops.findIndex((s) => s.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Shop not found' });
+  shops.splice(index, 1);
+  res.json({ success: true });
+});
+
 app.get('/api/products/:shopId', async (req, res) => {
   const shop = shops.find((s) => s.id === req.params.shopId);
   if (!shop) return res.status(404).json({ error: 'Shop not found' });
